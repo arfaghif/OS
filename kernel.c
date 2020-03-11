@@ -233,15 +233,13 @@ int len(char* buff){
 
 void splitPath(char *path,char* dirPath, char* filename){
   int i ,j;
-  i =len(path-1);
+  i =len(path)-1;
   j=0;
-  while(i>=0 && path[i]!= '0'){
-    j++;
+  while(i>=0 && path[i]!= '/'){
     i--;
   }
-  i++;
-  copy(path,dirPath,0, i-1);
-  copy(path, fileName, i, lenCopy);
+  copy(path,dirPath,0, i);
+  copy(path, fileName, i+1, len(path)-i-1);
 }
 
 
