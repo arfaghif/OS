@@ -26,11 +26,10 @@ void readString(char *string);
 void readSector(char *buffer, int sector);
 void writeSector(char *buffer, int sector);
 int stringComp(char* buffer, char* fileName);
-void readFile(char *buffer, char *filename, int *success);
+void writeFile(char *buffer, char *path, int *sectors, char parentIndex);
+void readFile(char *buffer, char *path, int *result, char parentIndex);
 void clear(char *buffer, int length); //Fungsi untuk mengisi buffer dengan 0
-void writeFile(char *buffer, char *filename, int *sectors);
 void executeProgram(char *filename, int segment, int *success);
-int lenString(char *buffer);
 int mod(int a, int b);
 int len(char *string);
 int div(int a, int b);
@@ -44,6 +43,10 @@ void split(char* string, char* left, char* right, char separator);
 
 int main() {
 
+  // /char ready[512];//buffer
+  // int success;
+  //readString(ready);
+  //int sector ;
   char ready[512];//buffer
   int success;
   int *sector = 1;
@@ -64,10 +67,14 @@ int main() {
   makeInterrupt21();
   while (1);
 
+  //writeFile("aku suka diaaaa","suka.txt",sector);
+ 	//writeFile(ready, "yeay", &sector,0XFF);
+  //makeInterrupt21();
+  while (1);
+
 }
 
 void handleInterrupt21 (int AX, int BX, int CX, int DX){
-void handleInterrupt21 (int AX, int BX, int CX, int DX) {
    char AL, AH;
    AL = (char) (AX);
    AH = (char) (AX >> 8);
@@ -92,7 +99,7 @@ void handleInterrupt21 (int AX, int BX, int CX, int DX) {
          break;
       case 0x06:
          executeProgram(BX, CX, DX, AH);
-         Break;
+         break;
       default:
          printString("Invalid interrupt");
    }
@@ -226,7 +233,7 @@ int isEqual(char *s1, char*s2){
 
 int len(char* buff){
   int length = 0;
-	while (string[length++] != '\0') {
+	while (buff[length++] != '\0') {
 	}
   return length;
 }
@@ -239,15 +246,16 @@ void splitPath(char *path,char* dirPath, char* filename){
     i--;
   }
   copy(path,dirPath,0, i);
-  copy(path, fileName, i+1, len(path)-i-1);
+  copy(path, filename, i+1, len(path)-i-1);
 }
 
 
 void copy(char* string1,char* string2, int begin, int length){
+  int i;
   //hapus dlu
   clear(string2,len(string2));
   //mulai kopi
-  if(begin <len(string1)&&){
+  if(begin <len(string1)){
     for (i=begin; i<length+begin && string1[i] != '\0';++i){
       string2[i-begin]=string1[i];
     }
@@ -267,11 +275,11 @@ void searchDir(char*dir, char * path, char* index, char* success, char parent){
     split(path, left,right,'/');
     //samakan yg kiri dengan nama dir yg tersedia
     for(i=0; i<MaxDF && !found; i+=Line){
-      copy(dir, dirname, i+2,MaxDFN);
+      copy(dir, dirname, i+2,MAXDFN);
       if(i==parent&&i+1==Dir&&isEqual(dirname, left)){
         found= TRUE;
         parent  = div(i,Line);
-        searchDir(dir, right, index, succes, parent);//rekursif
+        searchDir(dir, right, index, success, parent);//rekursif
       }
     }
     if(!found){
@@ -280,12 +288,12 @@ void searchDir(char*dir, char * path, char* index, char* success, char parent){
   }
 }
 
-void searchFile(char* dir, char*index, char* success,char parent){
+void searchFile(char* dir, char* fileName,char*index, char* success,char parent){
   char filename[MAXDFN];
-  int found;
+  int found,i;
   for(i=0; i<MaxDF && !found; i+=Line){
-    copy(dir, filename, i+2,MaxDFN);
-    if(i==parent&&i+1!=Dir&&isEqual(dirname, left)){
+    copy(dir, filename, i+2,MAXDFN);
+    if(i==parent&&i+1!=Dir&&isEqual(filename, fileName)){
       found= TRUE;
       *success=TRUE;
       *index= i+1;
@@ -369,7 +377,7 @@ void writeFile(char *buffer, char *path, int *sectors, char parentIndex){
       searchDir(df,dirPath,&parent,&succ,parentIndex);//TO DO
 
       if(succ){
-        searchFile(df, &i, &succ, parent);
+        searchFile(df,fileName, &i, &succ, parent);
       
         //Jika ada nama file yg sama
         if(succ){
@@ -380,7 +388,7 @@ void writeFile(char *buffer, char *path, int *sectors, char parentIndex){
           //cari sektor yg kosng d sector.img
           for(i=0;i<SectorSize;i+=Line){
             if (sec[i] == '\0') {
-              idxSec =div(i, Line)
+              idxSec =div(i, Line);
               df[idx*Line+1] = idxSec;
             }
           }
@@ -417,8 +425,8 @@ void writeFile(char *buffer, char *path, int *sectors, char parentIndex){
 
 void readFile(char *buffer, char *path, int *result, char parentIndex) {
   char df[SectorSize], sec[SectorSize], map[SectorSize];
-  char dirpath[MaxDF*Line];
-  char filename[MaxDFN];
+  char dirPath[MaxDF*Line];
+  char fileName[MAXDFN];
   int parent,idx,i;
   int found;
 
@@ -429,10 +437,10 @@ void readFile(char *buffer, char *path, int *result, char parentIndex) {
   splitPath(path, dirPath,fileName);
   searchDir(df,dirPath,&parent,&found,parentIndex);
   if(found){
-    searchFile(df,&idx,&found,parent);
+    searchFile(df,fileName,&idx,&found,parent);
     if(found){
       for(i=0;i<16&&sec[idx*Line + i]!='\0';++i){
-        readSector(buffer+i*SectorSize,sector[idx*Line+i]);
+        readSector(buffer+i*SectorSize,sec[idx*Line+i]);
       }
       *result = SUCCESS;
     }
