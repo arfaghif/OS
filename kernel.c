@@ -1,4 +1,3 @@
-#define MaxByte 256
 #define SectorSize 512
 #define MaxDF 64		
 #define MAXDFN 14	
@@ -43,33 +42,39 @@ void split(char* string, char* left, char* right, char separator);
 
 int main() {
 
-  // /char ready[512];//buffer
+  // char ready[512];//buffer
+  // char nama[14];
   // int success;
-  //readString(ready);
-  //int sector ;
-  char ready[512];//buffer
-  int success;
-  int *sector = 1;
-  printString("HELLO WORLD\n\r");
-  printString("Naufal\n\r");
-  printString("Vincent\n\r");
-  printString("Falah\n\r");
-  // if(success){
-  //       printString("Alhamdulillah\n\r");
-  //   }
-  // printString("isi file milestone1: ");
-  // printString(ready);
-  printString("\n\r");
-  printString("arkavidia\n\r");
-  bacaLogo();
+  // int *sector = 1;
+  // printString("nama file:");
+  // readString(nama);
+  // printString("isi file:");
+  // readString(ready);
+  // writeFile(ready,nama,success,0xFF);
+  // printString(success);
+  // printString("semoga bener");
 
-  //writeFile("aku suka diaaaa","suka.txt",sector);
+  // // printString(ready);
+  // // readString(ready);
+  // // printString("HELLO WORLD\n\r");
+  // // printString("Naufal\n\r");
+  // // printString("Vincent\n\r");
+  // // printString("Falah\n\r");
+
+  // // printString("\n\r");
+  // // printString("arkavidia\n\r");
+  // // bacaLogo();
+// 	int a = mod(5,2);
+// 	if(a==1){
+// 	printString("berhasil");
+// }else{
+// 	printString("ggal");
+// }
+	char map[SectorSize];
+	readSector(map, 0x100);
+	map[0] = 0xEF;
+	writeSector(map,0x100);
   makeInterrupt21();
-  while (1);
-
-  //writeFile("aku suka diaaaa","suka.txt",sector);
- 	//writeFile(ready, "yeay", &sector,0XFF);
-  //makeInterrupt21();
   while (1);
 
 }
@@ -384,6 +389,7 @@ void writeFile(char *buffer, char *path, int *sectors, char parentIndex){
           *sectors =ALREADY_EXIST;
         }
         else{
+
           df[idx*Line] = parent;
           //cari sektor yg kosng d sector.img
           for(i=0;i<SectorSize;i+=Line){
@@ -403,6 +409,7 @@ void writeFile(char *buffer, char *path, int *sectors, char parentIndex){
             }
             map[j] = 0xFF;
             sec[idxSec*Line+i] = j;
+            //printString((char)(j));
             copy(buffer,buff,i*SectorSize,SectorSize);
             writeSector(buff, j);
           }
