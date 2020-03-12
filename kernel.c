@@ -1,7 +1,7 @@
 #define SectorSize 512
 #define MaxDF 64		
 #define MAXDFN 14	
-#define MapSector 0x100	
+#define MapSector 0x100
 #define DFSector 0x101	
 #define SectorSector 0x103	 
 #define Root 0xFF		
@@ -35,45 +35,89 @@ int div(int a, int b);
 void bacaLogo();
 int isEqual(char *s1, char*s2);
 void splitPath(char *path,char* dirPath, char* filename);
-void searchDir(char*dir, char * path, char* index, char* success, char parent);
+void searchDir(char*dir, char * path, int* index, int* success, char parent);
 void copy(char* string1,char* string2, int begin, int length);
 void searchFile(char* dir, char*index, char* success,char parent);
 void split(char* string, char* left, char* right, char separator);
+void enter();
+void printStringln(char* string);
 
 int main() {
 
-  // char ready[512];//buffer
-  // char nama[14];
-  // int success;
-  // int *sector = 1;
-  // printString("nama file:");
-  // readString(nama);
-  // printString("isi file:");
-  // readString(ready);
-  // writeFile(ready,nama,success,0xFF);
-  // printString(success);
+  char ready[512];//buffer
+  char nama[14*64];
+  char nama1[14*64];
+  char map[512];
+  char d[14];
+  int success,i;
+  int *sector = 1;
+   printString("nama file:");
+   readString(nama);
+   printStringln(d);
+  printString("isi file:");
+   readString(ready);
+  writeFile(ready,nama,&success,0xFF);
+
+  readFile(d,nama,&success,0xFF);
+  printStringln("d");
+  printStringln(d);
+
+
+
+
+  // printString("Tonton");
+  // //readString(ready);
+  // readSector(map, DFSector);
+  // for(i=18; i<22;i++){
+  // 	nama[i]= ready[i];
+  // 	printStringln("hitung"); 
+  // }
+ //  	for (i=0; i<14;++i){
+	// 	nama[i]= map[i+18];//= ready[i];
+	// }
+	// printString(nama);
+ //  	copy(map, ready, 18,14);
+
+	// //writeSector(map, DFSector);
+	// printString(ready);
+	// readString(nama);
+
+	// if (isEqual(ready, nama)){
+	// 	printStringln("sama");
+	// }else{
+	// 	printStringln("beda");
+	// }
+  // if(ready[18]=="a"){
+  // 	printStringln("Arfa");
+  // }
+  //copy(ready,nama,16,14);
+  //printStringln(nama);
+
+  // if(success == SUCCESS){
+  // 	printString("Berhasil");
+  // }else{
+  // 	printString("Coba lagi");
+  // }
   // printString("semoga bener");
 
-  // // printString(ready);
-  // // readString(ready);
-  // // printString("HELLO WORLD\n\r");
-  // // printString("Naufal\n\r");
-  // // printString("Vincent\n\r");
-  // // printString("Falah\n\r");
+  //printString(ready);
 
-  // // printString("\n\r");
-  // // printString("arkavidia\n\r");
-  // // bacaLogo();
-// 	int a = mod(5,2);
-// 	if(a==1){
-// 	printString("berhasil");
-// }else{
-// 	printString("ggal");
-// }
-	char map[SectorSize];
-	readSector(map, 0x100);
-	map[0] = 0xEF;
-	writeSector(map,0x100);
+  // readString(ready);
+  // printString("HELLO WORLD\n\r");
+  // printString("Naufal\n\r");
+  // printString("Vincent\n\r");
+  // printString("Falah\n\r");
+
+  // printString("\n\r");
+  // printString("arkavidia\n\r");
+  // bacaLogo();
+
+	
+	// readSector(map, 1);
+	// for (i=0; i<len(ready);++i){
+	// 	map[i]= ready[i];
+	// }
+	// writeSector(map,1);
   makeInterrupt21();
   while (1);
 
@@ -120,6 +164,13 @@ void printString(char *string){
     }
 }
 
+void enter(){
+	printString("\n\r");
+}
+void printStringln(char* string){
+	printString(string);
+	enter();
+}
 
 void readString(char *string){
   int dashn = 0xa;
@@ -134,6 +185,8 @@ void readString(char *string){
             int ascii = interrupt(0x16,0,0,0,0);
             if (ascii == dashr){              
 				string[count] = _end;
+				interrupt(0x10,0xe*256+dashr,0,0,0);//geser satu huruf ke kiri
+				interrupt(0x10,0xe*256+dashn,0,0,0);//geser satu huruf ke kiri
 				//supaya pada layar new line dan balik lagi ke pojok kiri
                 return;
             }
@@ -219,7 +272,7 @@ void bacaLogo() {
 }
 
 
-
+//Membandingkan dua buah string
 int isEqual(char *s1, char*s2){
   int i, eq;
   eq= TRUE;
@@ -236,6 +289,8 @@ int isEqual(char *s1, char*s2){
   return eq;
 }
 
+
+//Mencari panjang suatu string
 int len(char* buff){
   int length = 0;
 	while (buff[length++] != '\0') {
@@ -243,10 +298,12 @@ int len(char* buff){
   return length;
 }
 
+//Digunakan dalam split nama file dengan pathnya
 void splitPath(char *path,char* dirPath, char* filename){
   int i ,j;
   i =len(path)-1;
   j=0;
+  //cari letak dash - 1
   while(i>=0 && path[i]!= '/'){
     i--;
   }
@@ -254,69 +311,69 @@ void splitPath(char *path,char* dirPath, char* filename){
   copy(path, filename, i+1, len(path)-i-1);
 }
 
-
+//Mengcopy string1 dari index begin sepanjang length ke string2
 void copy(char* string1,char* string2, int begin, int length){
-  int i;
-  //hapus dlu
-  clear(string2,len(string2));
-  //mulai kopi
-  if(begin <len(string1)){
-    for (i=begin; i<length+begin && string1[i] != '\0';++i){
-      string2[i-begin]=string1[i];
-    }
-  }
+  	int i;
+
+	for (i=0; i< length ;++i){
+	  string2[i]=string1[begin+i];
+	}
 }
 
 
-void searchDir(char*dir, char * path, char* index, char* success, char parent){
+//Mencari direktori. diimplementasikan, pake rekursif
+void searchDir(char*dir, char * path, int* index, int* success, char parent){
   char left[MaxDF*(Line)], right[MaxDF*(Line)];
   int i;
   char dirname[MAXDFN];
   int found;
   if(path[0]=='\0'){
+  	//basis
+  	//kalo udah kosng stringnya
     *index = parent;
-    *success =TRUE;
+    *success =1;
   }else{
     split(path, left,right,'/');
-    //samakan yg kiri dengan nama dir yg tersedia
+    //cari dir nya di dir.img
+    found =FALSE;
     for(i=0; i<MaxDF && !found; i+=Line){
       copy(dir, dirname, i+2,MAXDFN);
-      if(i==parent&&i+1==Dir&&isEqual(dirname, left)){
+      if(dir[i]==parent&&dir[i+1]==Dir&&isEqual(dirname, left)){
         found= TRUE;
+        //jadiin index ini jadi parent selanjutnya
         parent  = div(i,Line);
         searchDir(dir, right, index, success, parent);//rekursif
       }
     }
     if(!found){
-      *success = FALSE;
+      *success = 0;
     }
   }
 }
 
 void searchFile(char* dir, char* fileName,char*index, char* success,char parent){
   char filename[MAXDFN];
-  int found,i;
-  for(i=0; i<MaxDF && !found; i+=Line){
+  int i;
+  *success = 0;
+  //cari file nya
+  for(i=0; i<MaxDF && !(*success); i+=Line){
     copy(dir, filename, i+2,MAXDFN);
-    if(i==parent&&i+1!=Dir&&isEqual(filename, fileName)){
-      found= TRUE;
+    if(dir[i]==parent&&dir[i+1]!=Dir&&isEqual(filename, fileName)){
       *success=TRUE;
-      *index= i+1;
+      *index= dir[i+1];
     }
   }
-    if(!found){
-      *success = FALSE;
-    }
+
 }
 
+
+//Membagi dua string yang dipisahkan separator
 void split(char* string, char* left, char* right, char separator){
   int i,j,k;
-  int found = FALSE;
+  int found = 0;
   i=0;
   j=0;
   k=0;
-  clear(left,MaxDF*Line);
-  clear(right,MaxDF*Line);
   while(string[i]!='\0'){
     if (found){
       right[k] = string[i];
@@ -324,8 +381,9 @@ void split(char* string, char* left, char* right, char separator){
       i++;
     }else if(string[i]==separator){
       i++;
-      found = TRUE;
+      found = 1;
     }else{
+    	//selama blm ada separator, masuk sini dlu
       left[j] = string[i];
       i++;
       j++;
@@ -335,7 +393,7 @@ void split(char* string, char* left, char* right, char separator){
 
 
 void writeFile(char *buffer, char *path, int *sectors, char parentIndex){
-  char df[SectorSize], map[SectorSize], sec[SectorSize];
+  char df[2*SectorSize], map[SectorSize], sec[SectorSize];
   char dirPath[MaxDF*(Line)];
   char fileName[MaxDF];
   char buff[SectorSize];
@@ -379,7 +437,7 @@ void writeFile(char *buffer, char *path, int *sectors, char parentIndex){
     if(succ){
       splitPath(path, dirPath,fileName);
 
-      searchDir(df,dirPath,&parent,&succ,parentIndex);//TO DO
+      searchDir(df,dirPath,&parent,&succ,parentIndex);
 
       if(succ){
         searchFile(df,fileName, &i, &succ, parent);
@@ -396,6 +454,7 @@ void writeFile(char *buffer, char *path, int *sectors, char parentIndex){
             if (sec[i] == '\0') {
               idxSec =div(i, Line);
               df[idx*Line+1] = idxSec;
+              break;
             }
           }
           lenFile= len(fileName);
@@ -404,18 +463,19 @@ void writeFile(char *buffer, char *path, int *sectors, char parentIndex){
             df[idx *Line+i+2]=fileName[i];
           }
           for(i=0;i<needSec;++i){
-            //Cari sektor kosong
+            //Cari sektor kosong d system.img buat nulisnys
             for (j=0; j<SectorSize&& map[j]!=0x00;++j){
             }
             map[j] = 0xFF;
+            //masukkan ke line yg dipilih d sektor.img lokasi sektornya
             sec[idxSec*Line+i] = j;
-            //printString((char)(j));
             copy(buffer,buff,i*SectorSize,SectorSize);
             writeSector(buff, j);
           }
           writeSector(df,DFSector);
           writeSector(map,MapSector);
           writeSector(sec,SectorSector);
+          *sectors = SUCCESS;//asumsi aa klo sukses returnnya 1
         }
       }else{
         *sectors = DIR_NOT_FOUND;
@@ -431,10 +491,11 @@ void writeFile(char *buffer, char *path, int *sectors, char parentIndex){
 }
 
 void readFile(char *buffer, char *path, int *result, char parentIndex) {
-  char df[SectorSize], sec[SectorSize], map[SectorSize];
+  char df[2*SectorSize], sec[SectorSize], map[SectorSize];
   char dirPath[MaxDF*Line];
   char fileName[MAXDFN];
-  int parent,idx,i;
+  char curSec[SectorSize];
+  int parent,idx,i,j;
   int found;
 
   //Baca semua sektor
@@ -446,10 +507,17 @@ void readFile(char *buffer, char *path, int *result, char parentIndex) {
   if(found){
     searchFile(df,fileName,&idx,&found,parent);
     if(found){
+    	
       for(i=0;i<16&&sec[idx*Line + i]!='\0';++i){
-        readSector(buffer+i*SectorSize,sec[idx*Line+i]);
+      	//sektor baca dlu ke cur sec. trus satu persatu cursec tambahin ke buffer
+        readSector(curSec,sec[idx*Line+i]);
+        j=0;
+        for(j=0;j<SectorSize&&curSec[j]!='\0';++j){
+        	buffer[i*SectorSize+j]=curSec[j];
+        }
+
       }
-      *result = SUCCESS;
+      *result = SUCCESS;//asumsi aja klo berhasil return nya 1
     }
     else{
       *result = File_NOT_FOUND;
