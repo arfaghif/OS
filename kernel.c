@@ -28,7 +28,7 @@ int stringComp(char* buffer, char* fileName);
 void writeFile(char *buffer, char *path, int *sectors, char parentIndex);
 void readFile(char *buffer, char *path, int *result, char parentIndex);
 void clear(char *buffer, int length); //Fungsi untuk mengisi buffer dengan 0
-void executeProgram(char *filename, int segment, int *success);
+void executeProgram(int segment, char *path, int *result, char parentIndex);
 int mod(int a, int b);
 int len(char *string);
 int div(int a, int b);
@@ -227,19 +227,7 @@ void clear(char* buffer, int length) {
 	}
 }
 
-void executeProgram(char *filename, int segment, int *success) {
-  int i;
-  char buffer[512];
 
-  readFile(buffer,filename,success);
-  if (*success){
-    for (i=0; i<512;i++){
-      putInMemory(segment,i,buffer[i]);
-    } 
-
-    launchProgram(segment);
-  }
-}
 
 int mod(int a, int b){
 	while (a>=b){
@@ -529,12 +517,16 @@ void readFile(char *buffer, char *path, int *result, char parentIndex) {
 
 
 
+/*execute program*/
+void executeProgram(int segment, char *path, int *result, char parentIndex){
+	char buff[SectorSize*Line];
+	int i;
+	readFile(buff,path,result,parentIndex);
+	if(*result==TRUE){
+		for(i=0;i<SectorSize*Line;++i){
+			putInMemory(segment,i,buff[i]);
+		}
+		launchProgram(segment);
+	}
 
-
-
-
-
-
-
-
-
+}
