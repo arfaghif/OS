@@ -41,6 +41,8 @@ int main() {
     char inputSeparator[1];
     char input[100], temp[100], fileName[15];
     int inputLen, splitLen;
+
+    
     int type, copyStart, copyEnd;
     char argv[64][128];
     char dirs[SECTOR_SIZE];
