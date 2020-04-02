@@ -81,7 +81,7 @@ void main(int argc, char* argv[]) {
   int secidx = i*Line;
   //set dir folder and sector
   dir[dirindex] = 0xFF;
-  dir[dirindex+1] = secidx;
+  dir[dirindex+1] = i;
 
   // find free sectors and add them to the file
   int sectcount = 0;
@@ -130,8 +130,8 @@ void main(int argc, char* argv[]) {
   fseek(floppy, 512 * DFSector, SEEK_SET);
   for (i = 0; i < 512; i++) fputc(dir[i], floppy);
 
-  fseek(floppy, 512 * DFSector, SEEK_SET);
-  for (i = 0; i < 512; i++) fputc(dir[i], floppy);
+  fseek(floppy, 512 * SectorSector, SEEK_SET);
+  for (i = 0; i < 512; i++) fputc(sector[i], floppy);
 
   fclose(floppy);
   fclose(loadFil);

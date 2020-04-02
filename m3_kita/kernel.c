@@ -44,49 +44,83 @@ void executeProgram(int segment, char *path, int *result, char parentIndex);
 void deleteFile(char *path, int *success, char parentIndex);
 void deleteDir(char *path, int *success, char parentIndex);
 void makeDir(char *path, int *success, char parentIndex);
+void move(char *path1, char *path2, int *success, char parentIndex);
+void copyFile(char *path1, char *path2, int *success, char parentIndex);
+void copyDir(char *path1, char *path2, int *success, char parentIndex);
+void listDir(char parentIndex);
 int main() {
 
-//   char ready[512*16];//buffer
-//   char nama[14*64];
-//   char nama1[14*64];
-//   char map[512];
-//   char d[512*16];
-//   char f[512*16];
-//   int success,i;
-//   int *sector = 1;
-//    printString("nama file:");
-//    readString(nama);
-//   printString("isi file:");
-//    readString(ready);
-//   writeFile(ready,nama,&success,0xFF);
+   //char ready[512*16];//buffer
+ //  char nama[14*64];
+ //  char nama1[14*64];
+ //  char map[512];
+ //  char d[512*16];
+ //  char f[512*16];
+ //  int success,i,res;
+ //  int *sector = 1;
 
-//   readFile(d,nama,&success,0xFF);
-//   printStringln("d");
-//   printString(d);
+ //   printString("nama file:");
+ //   readString(nama);
+ //  printString("isi file:");
+ //   readString(ready);
+ //  writeFile(ready,nama,&success,0xFF);
 
+ //  readFile(d,nama,&success,0xFF);
+ //  printStringln("d");
+ //  printString(d);
+ //  clear(d, 512*16);
+ //  clear(nama, MAXDFN);
+ //  clear(ready,512*16);
+ // printString("nama file:");
+ //   readString(nama);
+ //  printString("isi file:");
+ //   readString(ready);
+ //  writeFile(ready,nama,&success,0xFF);
 
+ //  readFile(d,nama,&success,0xFF);
+ //  printStringln("d");
+ //  printString(d);
     int done;
-    char input[256],left[256],right[256];
+    char ready[512*16];
+    char input[256],args1[256],args2[256],args3[256],args4[256];
     int cd;
     int i, succ, curidx, leng;
     char dir[SectorSize*2];
     makeInterrupt21();
     done =FALSE;
     curidx =0xFF;
-    interrupt(0x21, 0x2, dir, DFSector, 0);
+    
     while(!done){
         //nampilin dolar kaya
-        clear(left,256);
-        clear(right,256);
+        //interrupt(0x21, 0x2, dir, DFSector, 0);
+        readSector(dir,DFSector);
+
+        clear(input,256);
+        // for (i=0;i<4;++i){
+        //   ready[i] = dir[4*Line+i+2];
+        // }
+        //printStringln(ready);
         interrupt(0x21, 0x0, "Neity:-", 0, 0);
         printPathDir(dir, curidx);
+        
         interrupt(0x21, 0x0, "$ ", 0, 0);
 
         interrupt(0x21, 0x1, input, 0,0);
-        split(input,  left,right, 0x20);   //bagi dua dari spasi
-        leng = len(left);
-        if(left[0]=='c' && left[1]=='d' &&leng==2){
-            searchDir(dir, right, &i, &succ ,curidx);
+        split(input,  args1,args3, 0x20);   //bagi dua dari spasi
+        split(args3,  args2,input, 0x20);
+        split(input,  args3,args4, 0x20);
+
+        // printStringln(args1);
+        //  printStringln(args2);
+        //   printStringln(args3);
+        //    printStringln(args4);
+
+
+        if(isEqual(args1,"cd")&&!isEqual(args2,"")&&isEqual(args3,"")){
+            readSector(dir,DFSector);
+
+            searchDir(dir, args2, &i, &succ ,curidx);
+
             if(succ){
                 curidx= i;
                 
@@ -94,14 +128,112 @@ int main() {
                 interrupt(0x21, 0x0, "Dir not found!! \n\r", 0, 0);
                 
             }
-        } else{
+        } 
+        else if(isEqual(args1,"mkdr")&&!isEqual(args2,"")&&isEqual(args3,"")){
+            makeDir(args2,&succ,curidx);
+            if(succ){
+                interrupt(0x21, 0x0, "Dir created jeeng\n\r", 0, 0);
+                clear(dir,512*2);
+                readSector(dir,DFSector);
+
+
+                
+            }else{
+                interrupt(0x21, 0x0, "Dir not found!! \n\r", 0, 0);
+                
+            }
+
+        }
+        else if(isEqual(args1,"cat")&&!isEqual(args2,"")&&isEqual(args3,"")){
+            readFile(ready,args2,&succ,curidx);
+            printStringln(ready);
+            clear(ready,512*16);
+            if(succ==1){
+                //interrupt(0x21, 0x0, "cacreated jeeng\n\r", 0, 0);
+                clear(dir,512*2);
+
+
+                
+            }else{
+                interrupt(0x21, 0x0, "fail! \n\r", 0, 0);
+                
+            }
+        }
+
+        //  else if(isEqual(args1,"rm")&&!isEqual(args2,"")&&isEqual(args3,"")){
+        //   if(args2[0]=='/'){
+        //     copy(args2,input,1,255);
+        //     deleteDir(input,&succ,curidx);
+        //   }else{
+        //     deleteFile(args2,&succ,curidx);
+        //   }
+        //   if(succ){
+        //         interrupt(0x21, 0x0, "Delete succ\n\r", 0, 0);
+        //         clear(dir,512*2);
+
+                
+        //     }else{
+        //         interrupt(0x21, 0x0, "Del failed!! \n\r", 0, 0);
+                
+        //     }
+        // }
+        else if(isEqual(args1,"ls")&&isEqual(args2,"")){
+           listDir(curidx);
+         }
+        //  else if(isEqual(args1,"mv")&&!isEqual(args2,"")&&!isEqual(args3,"")&&isEqual(args4,"")){
+        //   if(isEqual(args3,".")){
+        //     args3[0]="\0";
+        //   }
+        //   move(args2,args3,&succ,curidx);
+        //   if(succ){
+        //         interrupt(0x21, 0x0, "movesucc\n\r", 0, 0);
+        //         clear(dir,512*2);
+
+
+                
+        //     }else{
+        //         interrupt(0x21, 0x0, "mv failed!! \n\r", 0, 0);
+                
+        //   }
+        // }
+        // else if(isEqual(args1,"cp")&&!isEqual(args2,"")&&!isEqual(args3,"")&&isEqual(args4,"")){
+        //   if(isEqual(args3,".")){
+        //     args3[0]="\0";
+        //   }
+        //   if(args2[0]=='/'){
+        //     copy(args2,input,1,255);
+        //     //printStringln(input);
+        //     copyDir(input,args3,&succ,curidx);
+        //   }else{
+        //     copyFile(args2,args3,&succ,curidx);
+        //   }
+          
+        //   if(succ){
+        //         interrupt(0x21, 0x0, "copysucc\n\r", 0, 0);
+        //         clear(dir,512*2);
+
+
+                
+        //     }else{
+        //         interrupt(0x21, 0x0, "cp failed!! \n\r", 0, 0);
+                
+        //   }
+        // }
+
+
+        else{
             interrupt(0x21, 0x0, "Command not found!! \n\r", 0, 0);
         }
     }
   // int res;
-  // executeProgram(0x2000,"shell",res, 0xFF);
+
+  // printStringln("oyyy");
+  // //printStringln(nama);
+  // readFile(ready,"a.txt",&res,0xFF);
+  // //executeProgram(0x2000,"shell",&res, 0xFF);
+  // printStringln(ready);
   // makeInterrupt21();
-  //while (1);
+  while (1);
 
 }
 
@@ -277,7 +409,7 @@ void splitPath(char *path,char* dirPath, char* filename){
   j=0;
   //cari letak dash - 1
   clear(dirPath,len(dirPath));
-  clear(filename,len(filename));
+  clear(filename,MAXDFN);
   while(i>=0 && path[i]!= '/'){
     i--;
   }
@@ -301,6 +433,16 @@ void searchDir(char*dir, char * path, int* index, int* success, char parent){
   int i;
   char dirname[MAXDFN];
   int found;
+  // char ready[512*16];
+  // printString("path2");
+  // printStringln(path);
+  // for (i=0;i<4;++i){
+  //   ready[i] = dir[4*Line+i+2];
+  // }
+  // printStringln(ready);
+  // if (parent==0x1){
+  //   printStringln("dah bener");
+  // }
   if(path[0]=='\0'){
   	//basis
   	//kalo udah kosng stringnya
@@ -308,6 +450,9 @@ void searchDir(char*dir, char * path, int* index, int* success, char parent){
     *success =1;
   }else{
     split(path, left,right,'/');
+    // printString(path);
+    // printString(left);
+    // printStringln(right);
     if(left[0]=='.'&&left[1]=='.'){
     	if(parent==0xFF){
     		*success = 0;
@@ -319,11 +464,17 @@ void searchDir(char*dir, char * path, int* index, int* success, char parent){
 
 	    //cari dir nya di dir.img
 	    found =FALSE;
-	    for(i=0; i<MaxDF && !found; i+=Line){
+	    for(i=0; i<MaxDF*Line && !found; i+=Line){
 	      copy(dir, dirname, i+2,MAXDFN);
+        // if(dir[i+1]==Dir){
+        //   printString(left);
+        //   printStringln(dirname);
+        // }
+
 	      if(dir[i]==parent&&dir[i+1]==Dir&&isEqual(dirname, left)){
 	        found= TRUE;
 	        //jadiin index ini jadi parent selanjutnya
+          
 	        parent  = div(i,Line);
 	        searchDir(dir, right, index, success, parent);//rekursif
 	      }
@@ -340,7 +491,7 @@ void searchFile(char* dir, char* fileName,int*index, int* success,char parent){
   int i;
   *success = FALSE;
   //cari file nya
-  for(i=0; i<MaxDF && !(*success); i+=Line){
+  for(i=0; i<MaxDF*Line && !(*success); i+=Line){
     copy(dir, filename, i+2,MAXDFN);
     if(dir[i]==parent && dir[i+1] != Dir && isEqual(filename, fileName)){
       *success=TRUE;
@@ -358,8 +509,8 @@ void split(char* string, char* left, char* right, char separator){
   i=0;
   j=0;
   k=0;
-  clear(left,len(left));
-  clear(right,len(right));
+  clear(left,256);
+  clear(right,256);
   while(string[i]!='\0'){
     if (found){
       right[k] = string[i];
@@ -373,8 +524,13 @@ void split(char* string, char* left, char* right, char separator){
       left[j] = string[i];
       i++;
       j++;
+      // printString("left");
+      // printStringln(left);
     }
   }
+  // printString("left");
+      // printStringln(left);
+
 }
 
 
@@ -476,14 +632,9 @@ void writeFile(char *buffer, char *path, int *sectors, char parentIndex){
   }
 }
 
-
-
-
-
-
 void readFile(char *buffer, char *path, int *result, char parentIndex) {
   // deklarasi variabel-variabel yang dibutuhkan
-  char df[2 * SectorSize], sec[SectorSize];
+  char df[2 * SectorSize], sec[SectorSize], map[SectorSize];
   char dirPath[MaxDF * Line];
   char fileName[MAXDFN];
   char curSec[SectorSize];
@@ -492,6 +643,7 @@ void readFile(char *buffer, char *path, int *result, char parentIndex) {
 	//printStringln("masuk sinu");
   // melakukan pembacaan semua sektor
   readSector(df, DFSector);
+  readSector(map, MapSector);
   readSector(sec, SectorSector);
 
   splitPath(path, dirPath, fileName);
@@ -529,13 +681,18 @@ void readFile(char *buffer, char *path, int *result, char parentIndex) {
 void executeProgram(int segment, char *path, int *result, char parentIndex){
 	char buff[SectorSize*Line];
 	int i;
+  printStringln("uwu");
 	readFile(buff,path,result,parentIndex);
 	if(*result==TRUE){
+    printStringln("uwu");
+    //printStringln(buff);
 		for(i=0;i<SectorSize*Line;++i){
 			putInMemory(segment,i,buff[i]);
 		}
 		launchProgram(segment);
-	}
+	}else{
+    printStringln("gagal");
+  }
 
 }
 
@@ -576,7 +733,7 @@ void makeDir(char *path, int *success, char parentIndex){
     if (succ){
       //cari dir
       succ = FALSE;
-      for(i=0; i<MaxDF && !(succ); i+=Line){
+      for(i=0; i<MaxDF*Line && !(succ); i+=Line){
         copy(df, curName, i+2,MAXDFN);
         if(df[i]==parent && df[i+1] == Dir && isEqual(curName, dirName)){
           succ=TRUE;
@@ -613,7 +770,7 @@ void deleteDir(char *path, int *success, char parentIndex){
   if (succ){
     //cari dir
     succ = FALSE;
-    for(i=0; i<MaxDF && !(succ); i+=Line){
+    for(i=0; i<MaxDF*Line && !(succ); i+=Line){
       copy(df, curName, i+2,MAXDFN);
       if(df[i]==parent && df[i+1] == Dir && isEqual(curName, dirName)){
         succ =TRUE;
@@ -628,7 +785,7 @@ void deleteDir(char *path, int *success, char parentIndex){
       writeSector(df,DFSector);
       *success = TRUE;
       j=div(idx,Line);
-      for(i=0; i<MaxDF; i+=Line){
+      for(i=0; i<MaxDF*Line; i+=Line){
         copy(df, curName, i+2,MAXDFN);
         if(df[i]==j && df[i+1] == Dir){
           deleteDir(curName,&dummy,j);
@@ -676,7 +833,7 @@ void deleteFile(char *path, int *success, char parentIndex){
       }
       found = FALSE;
       //cari file nya
-      for(i=0; i<MaxDF && !(found); i+=Line){
+      for(i=0; i<MaxDF*Line && !(found); i+=Line){
         copy(df, curName, i+2,MAXDFN);
         if(df[i]==parent && df[i+1] != Dir && isEqual(curName, fileName)){
           found=TRUE;
@@ -691,4 +848,161 @@ void deleteFile(char *path, int *success, char parentIndex){
       *success = TRUE;
     }
   }
+}
+
+// void move(char *path1, char *path2, int *success, char parentIndex){
+//   char df[2*SectorSize];
+//   int i;
+//   int succ1;
+//   int succ2;
+//   char dirPath[MaxDF*(Line)];
+//   char name[MAXDFN], curName[MAXDFN];
+//   int parent1,parent2;
+//   *success =FALSE;
+//   readSector(df,DFSector);
+//   splitPath(path1, dirPath, name);
+//   searchDir(df, dirPath, &parent1, &succ1, parentIndex);
+//   searchDir(df, path2, &parent2, &succ2, parentIndex);
+//   if(succ1 && succ2){
+//     succ1 = FALSE;
+//     for(i=0; i<MaxDF*Line && !(succ1); i+=Line){
+//       copy(df, curName, i+2,MAXDFN);
+//       // if(df[i]==parent1){
+//       //   printString(curName);
+//       //   printStringln(name);
+//       // }
+//       if(df[i]==parent1 && isEqual(curName, name)){
+//         succ1 =TRUE;
+//         df[i] = parent2;
+//       }
+//     }
+//     if(succ1){
+//       writeSector(df,DFSector);
+//       *success = TRUE;
+//     }
+//   }
+// }
+
+void copyFile(char *path1, char *path2, int *success, char parentIndex){
+  char df[2*SectorSize], buff[SectorSize*Line];
+  int i;
+  int succ1, succ2;
+  char dirPath[MaxDF*(Line)];
+  char fileName[MAXDFN];
+  int parent;
+  *success = FALSE;
+  readSector(df,DFSector);
+  splitPath(path1, dirPath, fileName);
+  readFile(buff, path1,&succ1, parentIndex);
+  searchDir(df, path2, &parent, &succ2, parentIndex);
+  if(succ1==1 && succ2){
+    writeFile(buff,fileName,&succ1,parent );
+    if(succ1){;
+      *success =TRUE;
+    }
+  }
+}
+
+void copyDir(char *path1, char *path2, int *success, char parentIndex){
+  char df[2*SectorSize];
+  int i,idx;
+  int succ1;
+  int succ2;
+  char dirPath[MaxDF*(Line)];
+  char dirName[MAXDFN], name[MAXDFN],curName[MAXDFN];
+  int parent1,parent2;
+  *success = FALSE;
+  readSector(df,DFSector);
+  splitPath(path1, dirPath, dirName);
+  printStringln(path1);
+  printStringln(dirName);
+  printStringln(dirPath);
+  searchDir(df, dirPath, &parent1, &succ1, parentIndex);
+  searchDir(df, path2, &parent2, &succ2, parentIndex);
+  // printString("name:");
+  // printStringln(dirName);
+  if(succ1 && succ2){
+    succ1= FALSE;
+    // printString("name:");
+    // printStringln(dirName);
+    copy(dirName,name,0,MAXDFN);
+    for(i=0; i<MaxDF*Line && !(succ1); i+=Line){
+      copy(df, curName, i+2,MAXDFN);
+      //printStringln("masuk sii");
+      // if(df[i]==parent1){
+      //   printString(curName);
+      //   printString("|");
+      //   printStringln(name);
+      // }
+
+      if(df[i]==parent1 && df[i+1] == Dir && isEqual(curName, name)){
+        succ1 =TRUE;
+        idx = div(i,Line);
+        makeDir(name, &succ1,parent2);
+        searchDir(df, dirPath, &parent1, &succ1, parentIndex);
+      }
+    }
+    if(succ1){
+      for(i=0; i<MaxDF*Line && !(succ1); i+=Line){
+        copy(df, curName, i+2,MAXDFN);
+        if(df[i]== idx){
+          if(df[i+1]==Dir){
+            copyDir(curName,"",&succ1,parent1);
+          }else{
+            copyFile(curName,"",&succ1,parent1);
+          }
+        }
+      }
+
+      if(succ1){
+        *success = TRUE;
+      }else{
+        deleteDir(dirName, &succ1,parent2);
+      }
+    }
+  }
+}
+
+void listDir( char parentIndex){
+  char df[2*SectorSize];
+  int i;
+  char curName[MAXDFN];
+  readSector(df,DFSector);
+  for(i=0; i<MaxDF*Line ; i+=Line){
+    copy(df, curName, i+2,MAXDFN);
+    if(df[i]==parentIndex){
+      if(df[i+1]==Dir){
+        printString("/");
+      }
+      printStringln(curName);
+    }
+  }
+  // succ = FALSE;
+  // *success =FALSE;
+  // if (succ){
+  //   splitPath(path, dirPath,dirName);
+  //   succ = FALSE;
+  //   searchDir(df,dirPath,&parent,&succ,parentIndex);
+  //   if (succ){
+  //     //cari dir
+  //     succ = FALSE;
+  //     for(i=0; i<MaxDF*Line && !(succ); i+=Line){
+  //       copy(df, curName, i+2,MAXDFN);
+  //       if(df[i]==parent && df[i+1] == Dir && isEqual(curName, dirName)){
+  //         succ=TRUE;
+  //         idx = div(i,Line);
+  //       }
+  //     }
+  //     if(succ){//foldernya belum ada
+  //       for(i=0; i<MaxDF*Line && !(succ); i+=Line){
+  //       copy(df, curName, i+2,MAXDFN);
+  //       if(df[i]==idx){
+  //         if(df[i+1]==Dir){
+  //           printString("/");
+  //         }
+  //         printStringln(curName);
+  //       }
+  //     }
+  //   }
+  // }
 }
