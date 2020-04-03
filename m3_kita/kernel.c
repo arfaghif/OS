@@ -160,80 +160,80 @@ int main() {
             }
         }
 
-        //  else if(isEqual(args1,"rm")&&!isEqual(args2,"")&&isEqual(args3,"")){
-        //   if(args2[0]=='/'){
-        //     copy(args2,input,1,255);
-        //     deleteDir(input,&succ,curidx);
-        //   }else{
-        //     deleteFile(args2,&succ,curidx);
-        //   }
-        //   if(succ){
-        //         interrupt(0x21, 0x0, "Delete succ\n\r", 0, 0);
-        //         clear(dir,512*2);
+         else if(isEqual(args1,"rm")&&!isEqual(args2,"")&&isEqual(args3,"")){
+          if(args2[0]=='/'){
+            copy(args2,input,1,255);
+            deleteDir(input,&succ,curidx);
+          }else{
+            deleteFile(args2,&succ,curidx);
+          }
+          if(succ){
+                interrupt(0x21, 0x0, "Delete succ\n\r", 0, 0);
+                clear(dir,512*2);
 
                 
-        //     }else{
-        //         interrupt(0x21, 0x0, "Del failed!! \n\r", 0, 0);
+            }else{
+                interrupt(0x21, 0x0, "Del failed!! \n\r", 0, 0);
                 
-        //     }
-        // }
+            }
+        }
         else if(isEqual(args1,"ls")&&isEqual(args2,"")){
            listDir(curidx);
          }
-        //  else if(isEqual(args1,"mv")&&!isEqual(args2,"")&&!isEqual(args3,"")&&isEqual(args4,"")){
-        //   if(isEqual(args3,".")){
-        //     args3[0]="\0";
-        //   }
-        //   move(args2,args3,&succ,curidx);
-        //   if(succ){
-        //         interrupt(0x21, 0x0, "movesucc\n\r", 0, 0);
-        //         clear(dir,512*2);
+         else if(isEqual(args1,"mv")&&!isEqual(args2,"")&&!isEqual(args3,"")&&isEqual(args4,"")){
+          if(isEqual(args3,".")){
+            args3[0]="\0";
+          }
+          move(args2,args3,&succ,curidx);
+          if(succ){
+                interrupt(0x21, 0x0, "movesucc\n\r", 0, 0);
+                clear(dir,512*2);
 
 
                 
-        //     }else{
-        //         interrupt(0x21, 0x0, "mv failed!! \n\r", 0, 0);
+            }else{
+                interrupt(0x21, 0x0, "mv failed!! \n\r", 0, 0);
                 
-        //   }
-        // }
-        // else if(isEqual(args1,"cp")&&!isEqual(args2,"")&&!isEqual(args3,"")&&isEqual(args4,"")){
-        //   if(isEqual(args3,".")){
-        //     args3[0]="\0";
-        //   }
-        //   if(args2[0]=='/'){
-        //     copy(args2,input,1,255);
-        //     //printStringln(input);
-        //     copyDir(input,args3,&succ,curidx);
-        //   }else{
-        //     copyFile(args2,args3,&succ,curidx);
-        //   }
+          }
+        }
+        else if(isEqual(args1,"cp")&&!isEqual(args2,"")&&!isEqual(args3,"")&&isEqual(args4,"")){
+          if(isEqual(args3,".")){
+            args3[0]="\0";
+          }
+          if(args2[0]=='/'){
+            copy(args2,input,1,255);
+            //printStringln(input);
+            copyDir(input,args3,&succ,curidx);
+          }else{
+            copyFile(args2,args3,&succ,curidx);
+          }
           
-        //   if(succ){
-        //         interrupt(0x21, 0x0, "copysucc\n\r", 0, 0);
-        //         clear(dir,512*2);
+          if(succ){
+                interrupt(0x21, 0x0, "copysucc\n\r", 0, 0);
+                clear(dir,512*2);
 
 
                 
-        //     }else{
-        //         interrupt(0x21, 0x0, "cp failed!! \n\r", 0, 0);
+            }else{
+                interrupt(0x21, 0x0, "cp failed!! \n\r", 0, 0);
                 
-        //   }
-        // }
+          }
+        }
 
 
         else{
             interrupt(0x21, 0x0, "Command not found!! \n\r", 0, 0);
         }
     }
-  // int res;
+//   int res;
 
   // printStringln("oyyy");
   // //printStringln(nama);
   // readFile(ready,"a.txt",&res,0xFF);
-  // //executeProgram(0x2000,"shell",&res, 0xFF);
-  // printStringln(ready);
-  // makeInterrupt21();
-  while (1);
+//  executeProgram(0x2000,"shell",&res, 0xFF);
+//  // printStringln(ready);
+//  // makeInterrupt21();
+//  while (1);
 
 }
 
@@ -850,38 +850,38 @@ void deleteFile(char *path, int *success, char parentIndex){
   }
 }
 
-// void move(char *path1, char *path2, int *success, char parentIndex){
-//   char df[2*SectorSize];
-//   int i;
-//   int succ1;
-//   int succ2;
-//   char dirPath[MaxDF*(Line)];
-//   char name[MAXDFN], curName[MAXDFN];
-//   int parent1,parent2;
-//   *success =FALSE;
-//   readSector(df,DFSector);
-//   splitPath(path1, dirPath, name);
-//   searchDir(df, dirPath, &parent1, &succ1, parentIndex);
-//   searchDir(df, path2, &parent2, &succ2, parentIndex);
-//   if(succ1 && succ2){
-//     succ1 = FALSE;
-//     for(i=0; i<MaxDF*Line && !(succ1); i+=Line){
-//       copy(df, curName, i+2,MAXDFN);
-//       // if(df[i]==parent1){
-//       //   printString(curName);
-//       //   printStringln(name);
-//       // }
-//       if(df[i]==parent1 && isEqual(curName, name)){
-//         succ1 =TRUE;
-//         df[i] = parent2;
-//       }
-//     }
-//     if(succ1){
-//       writeSector(df,DFSector);
-//       *success = TRUE;
-//     }
-//   }
-// }
+void move(char *path1, char *path2, int *success, char parentIndex){
+  char df[2*SectorSize];
+  int i;
+  int succ1;
+  int succ2;
+  char dirPath[MaxDF*(Line)];
+  char name[MAXDFN], curName[MAXDFN];
+  int parent1,parent2;
+  *success =FALSE;
+  readSector(df,DFSector);
+  splitPath(path1, dirPath, name);
+  searchDir(df, dirPath, &parent1, &succ1, parentIndex);
+  searchDir(df, path2, &parent2, &succ2, parentIndex);
+  if(succ1 && succ2){
+    succ1 = FALSE;
+    for(i=0; i<MaxDF*Line && !(succ1); i+=Line){
+      copy(df, curName, i+2,MAXDFN);
+      // if(df[i]==parent1){
+      //   printString(curName);
+      //   printStringln(name);
+      // }
+      if(df[i]==parent1 && isEqual(curName, name)){
+        succ1 =TRUE;
+        df[i] = parent2;
+      }
+    }
+    if(succ1){
+      writeSector(df,DFSector);
+      *success = TRUE;
+    }
+  }
+}
 
 void copyFile(char *path1, char *path2, int *success, char parentIndex){
   char df[2*SectorSize], buff[SectorSize*Line];
