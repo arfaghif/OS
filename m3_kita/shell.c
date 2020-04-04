@@ -1,13 +1,4 @@
-#define SectorSize 512
-#define MaxDF 64		
-#define MAXDFN 14	
-#define DFSector 0x101	 
-#define Root 0xFF		
-#define Dir 0xFF
-#define Line 16
-#define TRUE 1
-#define FALSE 0
-
+#include "teks.h"
 
 // void printPathDir(char* dir, int index);
 // void clear(char *buffer, int length);
@@ -21,7 +12,7 @@
 
 
 int main(){
-  interrupt(0x21, 0x0, "Neity:-", 0, 0);
+  printStringln("plis lah");
 
 }
 

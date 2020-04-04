@@ -129,12 +129,14 @@ void splitPath(char *path,char* dirPath, char* filename){
   }
   copy(path,dirPath,0, i);
   copy(path, filename, i+1, len(path)-i-1);
+  // printStringln(path);
+  // printStringln(filename);
 }
 
 //Mengcopy string1 dari index begin sepanjang length ke string2
 void copy(char* string1,char* string2, int begin, int length){
   	int i;
-  	clear(string2,len(string2));
+  	clear(string2,length);
 	for (i=0; i< length ;++i){
 	  string2[i]=string1[begin+i];
 	}

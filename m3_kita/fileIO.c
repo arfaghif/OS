@@ -185,6 +185,7 @@ void deleteFile(char *path, int *success, char parentIndex){
   char curSec[SectorSize];
   int parent, idx, i, j,k;
   int found;
+  *success = FALSE;
   //printStringln("masuk sinu");
   // melakukan pembacaan semua sektor
   readSector(df, DFSector);
@@ -239,13 +240,63 @@ void copyFile(char *path1, char *path2, int *success, char parentIndex){
   int parent;
   *success = FALSE;
   readSector(df,DFSector);
+  // printStringln(path1);
   splitPath(path1, dirPath, fileName);
+  // printStringln(path1);
+  
   readFile(buff, path1,&succ1, parentIndex);
+  //printStringln(buff);
   searchDir(df, path2, &parent, &succ2, parentIndex);
   if(succ1==1 && succ2){
     writeFile(buff,fileName,&succ1,parent );
-    if(succ1){;
+    if(succ1==1){;
       *success =TRUE;
+    }else{
+      // printStringln("ga bisa nulis");
+    }
+  }else{
+    // printStringln("ga nemu dir");
+  }
+}
+
+void move(char *path1, char *path2, int *success, int parentIndex, char aFile){
+  char df[2*SectorSize];
+  int i;
+  int succ1;
+  int succ2;
+  char dirPath[MaxDF*(Line)];
+  char name[MAXDFN], curName[MAXDFN];
+  int parent1,parent2;
+  *success =FALSE;
+  readSector(df,DFSector);
+  splitPath(path1, dirPath, name);
+  searchDir(df, dirPath, &parent1, &succ1, parentIndex);
+  searchDir(df, path2, &parent2, &succ2, parentIndex);
+  // if(aFile==0){
+  //   printStringln("ini foder");
+  // }
+  // printStringln(name);
+  if(succ1 && succ2){
+    succ1 = FALSE;
+    // printStringln(name);
+    for(i=0; i<MaxDF*Line && !(succ1); i+=Line){
+      // printStringln(name);
+      copy(df, curName, i+2,MAXDFN);
+      // printStringln(name);
+      // break;
+      // if(df[i]==parent1){
+      //   printStringln(curName);
+      //   printStringln(name);
+      // }
+      if(df[i]==parent1 && isEqual(curName, name)&&((df[i+1]==Dir && !aFile) || (df[i+1]!=Dir &&aFile))){
+
+        succ1 =TRUE;
+        df[i] = parent2;
+      }
+    }
+    if(succ1){
+      writeSector(df,DFSector);
+      *success = TRUE;
     }
   }
 }

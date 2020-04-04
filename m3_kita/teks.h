@@ -4,8 +4,7 @@
 #define MAXDFN 14
 #define Dir 0xFF
 #define Line 16
-
-
+#include "matematika.h"
 
 
 void printString(char *string);

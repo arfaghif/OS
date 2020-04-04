@@ -1,6 +1,6 @@
-void handleInterrupt21 (int AX, int BX, int CX, int DX);
-#include "folderIO.h"
 
+#include "folderIO.h"
+void handleInterrupt21 (int AX, int BX, int CX, int DX);
 
 
 
@@ -49,6 +49,7 @@ int main(){
     makeInterrupt21();
     done =FALSE;
     curidx =0xFF;
+    bacaLogo();
     
     while(!done){
         //nampilin dolar kaya
@@ -69,6 +70,7 @@ int main(){
         split(input,  args1,args3, 0x20);   //bagi dua dari spasi
         split(args3,  args2,input, 0x20);
         split(input,  args3,args4, 0x20);
+        clear(input, 256);
 
         // printStringln(args1);
         //  printStringln(args2);
@@ -85,21 +87,21 @@ int main(){
                 curidx= i;
                 
             }else{
-                interrupt(0x21, 0x0, "Dir not found!! \n\r", 0, 0);
+                interrupt(0x21, 0x0, "Directory not found!! \n\r", 0, 0);
                 
             }
         } 
-        else if(isEqual(args1,"mkdr")&&!isEqual(args2,"")&&isEqual(args3,"")){
+        else if(isEqual(args1,"mkdir")&&!isEqual(args2,"")&&isEqual(args3,"")){
             makeDir(args2,&succ,curidx);
             if(succ){
-                interrupt(0x21, 0x0, "Dir created jeeng\n\r", 0, 0);
+                interrupt(0x21, 0x0, "Dir created\n\r", 0, 0);
                 clear(dir,512*2);
                 readSector(dir,DFSector);
 
 
                 
             }else{
-                interrupt(0x21, 0x0, "Dir not found!! \n\r", 0, 0);
+                interrupt(0x21, 0x0, "failed create directory!! \n\r", 0, 0);
                 
             }
 
@@ -115,7 +117,7 @@ int main(){
 
                 
             }else{
-                interrupt(0x21, 0x0, "fail! \n\r", 0, 0);
+                interrupt(0x21, 0x0, "fail cat! \n\r", 0, 0);
                 
             }
         }
@@ -128,12 +130,12 @@ int main(){
             deleteFile(args2,&succ,curidx);
           }
           if(succ){
-                interrupt(0x21, 0x0, "Delete succ\n\r", 0, 0);
+                interrupt(0x21, 0x0, "Delete success\n\r", 0, 0);
                 clear(dir,512*2);
 
                 
             }else{
-                interrupt(0x21, 0x0, "Del failed!! \n\r", 0, 0);
+                interrupt(0x21, 0x0, "Delete failed!! \n\r", 0, 0);
                 
             }
         }
@@ -142,58 +144,76 @@ int main(){
          }
          else if(isEqual(args1,"mv")&&!isEqual(args2,"")&&!isEqual(args3,"")&&isEqual(args4,"")){
           if(isEqual(args3,".")){
-            args3[0]="\0";
+            clear(args3,1);
           }
-          move(args2,args3,&succ,curidx);
+          if(args2[0]=='/'){
+            copy(args2,input,1,255);
+            move(input,args3,&succ,curidx,FALSE);
+          }else{
+            move(args2,args3,&succ,curidx,TRUE);
+          }
           if(succ){
-                interrupt(0x21, 0x0, "movesucc\n\r", 0, 0);
+                printStringln("move success");
                 clear(dir,512*2);
 
 
                 
             }else{
-                interrupt(0x21, 0x0, "mv failed!! \n\r", 0, 0);
+                printStringln("move failed");
                 
           }
         }
         else if(isEqual(args1,"cp")&&!isEqual(args2,"")&&!isEqual(args3,"")&&isEqual(args4,"")){
           if(isEqual(args3,".")){
-            args3[0]="\0";
+            clear(args3,1);
           }
           if(args2[0]=='/'){
             copy(args2,input,1,255);
-            //printStringln(input);
             copyDir(input,args3,&succ,curidx);
           }else{
             copyFile(args2,args3,&succ,curidx);
           }
           
           if(succ){
-                interrupt(0x21, 0x0, "copysucc\n\r", 0, 0);
+                //interrupt(0x21, 0x0, "copy succ\n\r", 0, 0);
                 clear(dir,512*2);
 
 
                 
             }else{
-                interrupt(0x21, 0x0, "cp failed!! \n\r", 0, 0);
+                interrupt(0x21, 0x0, "copy failed!! \n\r", 0, 0);
                 
+          }
+        }
+        else if(args1[0]=='.'&& args1[1]=='/'&&isEqual(args2,"")){
+          copy(args1,input,1,255);
+          executeProgram(0x2000, input,&succ,curidx);
+          if(succ){
+                  clear(dir,512*2);
+
+
+                
+            }else{
+                printStringln("run failed");
+
           }
         }
 
 
         else{
-            interrupt(0x21, 0x0, "Command not found!! \n\r", 0, 0);
+            printStringln("Command not found");
         }
     }
-    //   int res;
+//        int res;
 
-  // printStringln("oyyy");
-  // //printStringln(nama);
-  // readFile(ready,"a.txt",&res,0xFF);
-//  executeProgram(0x2000,"shell",&res, 0xFF);
-//  // printStringln(ready);
-//  // makeInterrupt21();
-//  while (1);
+//   // printStringln("oyyy");
+//   // //printStringln(nama);
+//   // readFile(ready,"a.txt",&res,0xFF);
+//        makeInterrupt21();
+//  executeProgram(0x1600,"shell",&res, 0xFF);
+// //  // printStringln(ready);
+//  makeInterrupt21();
+//   while (1);
 }
 
 

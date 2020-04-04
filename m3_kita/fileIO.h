@@ -1,5 +1,4 @@
 #include "teks.h"
-#include "matematika.h"
 #define SectorSize 512
 #define MapSector 0x100
 #define DFSector 0x101	
@@ -19,4 +18,5 @@ void searchFile(char* dir, int*index, int* success,char parent);
 void executeProgram(int segment, char *path, int *result, char parentIndex);
 void deleteFile(char *path, int *success, char parentIndex);
 void copyFile(char *path1, char *path2, int *success, char parentIndex);
+void move(char *path1, char *path2, int *success, char parentIndex, int aFile);
 
